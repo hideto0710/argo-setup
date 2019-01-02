@@ -3,7 +3,7 @@ kind: Sensor
 metadata:
   name: webhook-sensor
   labels:
-    sensors.argoproj.io/sensor-controller-instanceid: argo-events
+    sensors.argoproj.io/sensor-controller-instanceid: argo
 spec:
   repeat: true
   serviceAccountName: argo-events-sa

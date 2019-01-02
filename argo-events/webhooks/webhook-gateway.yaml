@@ -16,7 +16,7 @@ kind: Gateway
 metadata:
   name: webhook-gateway
   labels:
-    gateways.argoproj.io/gateway-controller-instanceid: argo-events
+    gateways.argoproj.io/gateway-controller-instanceid: argo
     gateway-name: "webhook-gateway"
 spec:
   configMap: "webhook-gateway-configmap"
