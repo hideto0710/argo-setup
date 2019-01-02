@@ -3,7 +3,7 @@ kind: Sensor
 metadata:
   name: webhook-sensor
   labels:
-    sensors.argoproj.io/sensor-controller-instanceid: argo
+    sensors.argoproj.io/sensor-controller-instanceid: argo-events
 spec:
   repeat: true
   serviceAccountName: argo-events-sa
@@ -14,7 +14,7 @@ spec:
   triggers:
     - name: webhook-workflow-trigger
       resource:
-        namespace: argo
+        namespace: argo-events
         group: argoproj.io
         version: v1alpha1
         kind: Workflow
