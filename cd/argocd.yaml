@@ -31,7 +31,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: application-controller
+  name: argocd-application-controller
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -46,15 +46,17 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: application-controller-role
+  name: argocd-application-controller
 rules:
 - apiGroups:
   - ""
   resources:
   - secrets
+  - configmaps
   verbs:
   - get
   - list
+  - watch
 - apiGroups:
   - argoproj.io
   resources:
@@ -70,14 +72,6 @@ rules:
   - delete
 - apiGroups:
   - ""
-  resourceNames:
-  - argocd-cm
-  resources:
-  - configmaps
-  verbs:
-  - get
-- apiGroups:
-  - ""
   resources:
   - events
   verbs:
@@ -87,7 +81,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: argocd-server-role
+  name: argocd-server
 rules:
 - apiGroups:
   - ""
@@ -126,7 +120,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: dex-server-role
+  name: dex-server
 rules:
 - apiGroups:
   - ""
@@ -141,7 +135,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: application-controller-clusterrole
+  name: argocd-application-controller
 rules:
 - apiGroups:
   - '*'
@@ -157,7 +151,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: argocd-server-clusterrole
+  name: argocd-server
 rules:
 - apiGroups:
   - '*'
@@ -183,23 +177,23 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: application-controller-role-binding
+  name: argocd-application-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: application-controller-role
+  name: argocd-application-controller
 subjects:
 - kind: ServiceAccount
-  name: application-controller
+  name: argocd-application-controller
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: argocd-server-role-binding
+  name: argocd-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: argocd-server-role
+  name: argocd-server
 subjects:
 - kind: ServiceAccount
   name: argocd-server
@@ -207,11 +201,11 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: dex-server-role-binding
+  name: dex-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: dex-server-role
+  name: dex-server
 subjects:
 - kind: ServiceAccount
   name: dex-server
@@ -219,24 +213,24 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: application-controller-clusterrolebinding
+  name: argocd-application-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: application-controller-clusterrole
+  name: argocd-application-controller
 subjects:
 - kind: ServiceAccount
-  name: application-controller
+  name: argocd-application-controller
   namespace: argocd
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: argocd-server-clusterrolebinding
+  name: argocd-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: argocd-server-clusterrole
+  name: argocd-server
 subjects:
 - kind: ServiceAccount
   name: argocd-server
@@ -261,13 +255,13 @@ type: Opaque
 apiVersion: v1
 kind: Service
 metadata:
-  name: application-controller
+  name: argocd-application-controller
 spec:
   ports:
   - port: 8083
     targetPort: 8083
   selector:
-    app: application-controller
+    app: argocd-application-controller
 ---
 apiVersion: v1
 kind: Service
@@ -332,15 +326,15 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: application-controller
+  name: argocd-application-controller
 spec:
   selector:
     matchLabels:
-      app: application-controller
+      app: argocd-application-controller
   template:
     metadata:
       labels:
-        app: application-controller
+        app: argocd-application-controller
     spec:
       containers:
       - command:
@@ -349,9 +343,9 @@ spec:
         - "20"
         - --operation-processors
         - "10"
-        image: argoproj/argocd:v0.11.0-rc1
+        image: argoproj/argocd:v0.11.0
         imagePullPolicy: Always
-        name: application-controller
+        name: argocd-application-controller
         ports:
         - containerPort: 8083
         readinessProbe:
@@ -359,7 +353,7 @@ spec:
           periodSeconds: 10
           tcpSocket:
             port: 8083
-      serviceAccountName: application-controller
+      serviceAccountName: argocd-application-controller
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -378,7 +372,7 @@ spec:
       containers:
       - command:
         - argocd-repo-server
-        image: argoproj/argocd:v0.11.0-rc1
+        image: argoproj/argocd:v0.11.0
         imagePullPolicy: Always
         name: argocd-repo-server
         ports:
@@ -407,7 +401,7 @@ spec:
         - argocd-server
         - --staticassets
         - /shared/app
-        image: argoproj/argocd:v0.11.0-rc1
+        image: argoproj/argocd:v0.11.0
         imagePullPolicy: Always
         name: argocd-server
         ports:
@@ -427,7 +421,7 @@ spec:
         - -r
         - /app
         - /shared
-        image: argoproj/argocd-ui:v0.11.0-rc1
+        image: argoproj/argocd-ui:v0.11.0
         imagePullPolicy: Always
         name: ui
         volumeMounts:
@@ -469,7 +463,7 @@ spec:
         - cp
         - /usr/local/bin/argocd-util
         - /shared
-        image: argoproj/argocd:v0.11.0-rc1
+        image: argoproj/argocd:v0.11.0
         imagePullPolicy: Always
         name: copyutil
         volumeMounts:
