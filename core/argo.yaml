@@ -201,10 +201,13 @@ metadata:
   namespace: argo
 spec:
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8001
   selector:
     app: argo-ui
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+    - 126.194.156.167/32
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
