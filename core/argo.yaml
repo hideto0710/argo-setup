@@ -207,7 +207,7 @@ spec:
     app: argo-ui
   type: LoadBalancer
   loadBalancerSourceRanges:
-    - 126.194.156.167/32
+    - 10.0.0.0/8
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
